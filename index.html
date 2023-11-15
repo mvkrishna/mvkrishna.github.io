@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"> -->
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
   <title>Profile</title>
   <style>
     body {
       font-family: 'Open Sans', sans-serif;
-      background-color: #f8f9fa;
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -21,16 +19,12 @@
     .resume {
       max-width: 800px;
       margin: 50px auto;
-      background-color: #ffffff;
       padding: 15px;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
     .sidebar {
       display: none;
-      background-color: #343a40;
-      padding: 15px;
-      color: #ffffff;
       position: fixed;
       top: 0;
       left: 0;
@@ -45,7 +39,6 @@
       margin-bottom: 10px;
     }
     .navbar {
-      background-color: #ffffff;
       border: none;
     }
     @media (max-width: 768px) {
@@ -57,35 +50,36 @@
       }
     }
     h1, h2, h3 {
-      color: #343a40;
       margin-bottom: 5px;
     }
-    p,li {
+    p, li {
       margin-bottom: 8px;
       font-size: 14px;
     }
     hr {
-      border-color: #343a40;
       margin: 15px 0;
     }
-  .flex-container {
-    display: flex;
-    justify-content: space-between;
-    max-width: 1200px;
-    margin: 20px auto;
-  }
+    .flex-container {
+      display: flex;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 20px auto;
+    }
+    .column {
+      width: 48%;
+    }
 
-  .column {
-    width: 48%; /* Adjust as needed */
-  }
-
- 
-
-  /* Add your existing styles for sections, animations, and other elements here */
-</style>
-
-</style>
-
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #343a40;
+        color: #ffffff;
+      }
+      .resume {
+        background-color: #212529;
+      }
+    }
+  </style>
 </head>
 <body>
 
