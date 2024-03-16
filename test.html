@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" manifest="cache.manifest">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Capture and Annotation</title>
+</head>
+<body>
+    <h1>Image Capture and Annotation</h1>
+    <input type="file" accept="image/*" capture="camera" id="imageInput">
+    <br><br>
+    <canvas id="canvas" width="400" height="300" style="border:1px solid black;"></canvas>
+    <br><br>
+    <label for="textInput">Enter Text:</label>
+    <input type="text" id="textInput">
+    <br><br>
+    <button onclick="annotateImage()">Annotate Image</button>
+    <button onclick="saveImage()">Save Image</button>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const textInput = document.getElementById('textInput');
+
+        function annotateImage() {
+            const image = new Image();
+            image.onload = function() {
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                ctx.font = '20px Arial';
+                ctx.fillStyle = 'white';
+                ctx.fillText(textInput.value, 50, 50); // Adjust position as needed
+            };
+            image.src = URL.createObjectURL(imageInput.files[0]);
+        }
+
+        function saveImage() {
+            const dataURL = canvas.toDataURL();
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = 'annotated_image.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>
