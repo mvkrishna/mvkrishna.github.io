@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Quiz Game</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+  <style>
+    body {
+      background-color: #f0f8ff;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+    }
+    .question {
+      font-size: 1.8rem;
+      margin: 20px 0;
+    }
+    .menu-bar {
+      margin-bottom: 20px;
+    }
+    .result-table {
+      margin-top: 20px;
+    }
+    .card {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: none;
+      background-color: #fefefe;
+    }
+    .timer {
+      font-size: 1.4rem;
+      margin-top: 10px;
+      text-align: center;
+      color: #ff4500;
+    }
+    .correct {
+      color: #28a745;
+      font-weight: bold;
+    }
+    .wrong {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    .stats {
+      font-size: 1.2rem;
+      margin-top: 20px;
+      text-align: center;
+    }
+    button {
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light menu-bar">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Math Quiz Game</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Settings</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">About</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="card">
+      <div class="card-body">
+        <h3 class="card-title text-center">Configure Your Quiz</h3>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="operations" class="form-label">Select Operations:</label>
+            <select id="operations" class="form-select" multiple>
+              <option value="addition">Addition</option>
+              <option value="subtraction">Subtraction</option>
+              <option value="multiplication">Multiplication</option>
+              <option value="division">Division</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="range" class="form-label">Number Range:</label>
+            <input type="number" id="range" class="form-control" value="10" min="1" max="20">
+          </div>
+          <div class="col-md-3">
+            <label for="questionCount" class="form-label">Number of Questions:</label>
+            <input type="number" id="questionCount" class="form-control" value="5" min="1" max="20">
+          </div>
+        </div>
+        <div class="text-center">
+          <button class="btn btn-primary" id="startQuiz">Start Quiz</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="quizContainer" class="mt-4" style="display: none;">
+      <div class="card">
+        <div class="card-body">
+          <div id="question" class="question text-center"></div>
+          <div class="timer" id="questionTimer">Time: 0s</div>
+          <input type="number" id="answer" class="form-control text-center mb-3" placeholder="Your Answer" autofocus>
+          <div class="text-center">
+            <button class="btn btn-success" id="submitAnswer">Submit Answer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultsContainer" class="mt-4" style="display: none;">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title text-center">Results</h3>
+          <table class="table table-bordered result-table">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Your Answer</th>
+                <th>Correct Answer</th>
+                <th>Time Taken (s)</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody"></tbody>
+          </table>
+          <div class="stats">
+            <p>Total Questions: <span id="totalQuestions"></span></p>
+            <p>Correct Answers: <span id="correctAnswers" class="correct"></span></p>
+            <p>Wrong Answers: <span id="wrongAnswers" class="wrong"></span></p>
+            <p>Total Time: <span id="totalTime"></span>s</p>
+          </div>
+          <div class="text-center">
+            <button class="btn btn-secondary" id="restartQuiz">Restart Quiz</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const operations = {
+      addition: (a, b) => a + b,
+      subtraction: (a, b) => a - b,
+      multiplication: (a, b) => a * b,
+      division: (a, b) => Math.round((a / b) * 100) / 100,
+    };
+
+    let quizConfig = {
+      selectedOperations: [],
+      range: 10,
+      questionCount: 5,
+      questions: [],
+      currentQuestionIndex: 0,
+      answers: [],
+      totalStartTime: 0,
+      questionStartTime: 0,
+      totalElapsedTime: 0
+    };
+
+    const startQuiz = () => {
+      quizConfig.selectedOperations = Array.from(document.getElementById('operations').selectedOptions).map(o => o.value);
+      quizConfig.range = parseInt(document.getElementById('range').value);
+      quizConfig.questionCount = parseInt(document.getElementById('questionCount').value);
+
+      if (quizConfig.selectedOperations.length === 0) {
+        alert('Please select at least one operation.');
+        return;
+      }
+
+      generateQuestions();
+      quizConfig.totalStartTime = Date.now();
+      displayQuestion();
+
+      document.getElementById('quizContainer').style.display = 'block';
+      document.getElementById('resultsContainer').style.display = 'none';
+    };
+
+    const generateQuestions = () => {
+      quizConfig.questions = [];
+      for (let i = 0; i < quizConfig.questionCount; i++) {
+        const operation = quizConfig.selectedOperations[Math.floor(Math.random() * quizConfig.selectedOperations.length)];
+        const num1 = Math.floor(Math.random() * quizConfig.range) + 1;
+        const num2 = Math.floor(Math.random() * quizConfig.range) + 1;
+
+        quizConfig.questions.push({
+          num1,
+          num2,
+          operation,
+          correctAnswer: operations[operation](num1, num2)
+        });
+      }
+      quizConfig.currentQuestionIndex = 0;
+      quizConfig.answers = [];
+    };
+
+    const displayQuestion = () => {
+      const question = quizConfig.questions[quizConfig.currentQuestionIndex];
+      document.getElementById('question').innerText = `${question.num1} ${operationSymbol(question.operation)} ${question.num2} = ?`;
+      document.getElementById('answer').value = '';
+      document.getElementById('answer').focus();
+      quizConfig.questionStartTime = Date.now();
+      updateTimer();
+    };
+
+    const operationSymbol = (operation) => {
+      switch (operation) {
+        case 'addition': return '+';
+        case 'subtraction': return '-';
+        case 'multiplication': return '×';
+        case 'division': return '÷';
+        default: return '';
+      }
+    };
+
+    const submitAnswer = () => {
+      const userAnswer = parseFloat(document.getElementById('answer').value);
+      const currentQuestion = quizConfig.questions[quizConfig.currentQuestionIndex];
+      const timeTaken = Math.round((Date.now() - quizConfig.questionStartTime) / 1000);
+      quizConfig.totalElapsedTime += timeTaken;
+
+      quizConfig.answers.push({
+        question: `${currentQuestion.num1} ${operationSymbol(currentQuestion.operation)} ${currentQuestion.num2}`,
+        userAnswer,
+        correctAnswer: currentQuestion.correctAnswer,
+        timeTaken,
+        isCorrect: userAnswer === currentQuestion.correctAnswer
+      });
+
+      if (quizConfig.currentQuestionIndex < quizConfig.questionCount - 1) {
+        quizConfig.currentQuestionIndex++;
+        displayQuestion();
+      } else {
+        displayResults();
+      }
+    };
+
+    const displayResults = () => {
+      const resultsTableBody = document.getElementById('resultsTableBody');
+      resultsTableBody.innerHTML = '';
+
+      let correctCount = 0;
+      quizConfig.answers.forEach(answer => {
+        const row = document.createElement('tr');
+        const isCorrect = answer.isCorrect;
+        if (isCorrect) correctCount++;
+
+        row.innerHTML = `
+          <td>${answer.question}</td>
+          <td class="${isCorrect ? 'correct' : 'wrong'}">${answer.userAnswer || 'No Answer'}</td>
+          <td>${answer.correctAnswer}</td>
+          <td>${answer.timeTaken}</td>
+        `;
+
+        resultsTableBody.appendChild(row);
+      });
+
+      document.getElementById('totalQuestions').innerText = quizConfig.questionCount;
+      document.getElementById('correctAnswers').innerText = correctCount;
+      document.getElementById('wrongAnswers').innerText = quizConfig.questionCount - correctCount;
+      document.getElementById('totalTime').innerText = quizConfig.totalElapsedTime;
+      document.getElementById('quizContainer').style.display = 'none';
+      document.getElementById('resultsContainer').style.display = 'block';
+    };
+
+    const restartQuiz = () => {
+      document.getElementById('quizContainer').style.display = 'none';
+      document.getElementById('resultsContainer').style.display = 'none';
+    };
+
+    const updateTimer = () => {
+      const interval = setInterval(() => {
+        if (quizConfig.currentQuestionIndex >= quizConfig.questions.length) {
+          clearInterval(interval);
+          return;
+        }
+        const elapsedTime = Math.round((Date.now() - quizConfig.questionStartTime) / 1000);
+        document.getElementById('questionTimer').innerText = `Time: ${elapsedTime}s`;
+      }, 1000);
+    };
+
+    document.getElementById('startQuiz').addEventListener('click', startQuiz);
+    document.getElementById('submitAnswer').addEventListener('click', submitAnswer);
+    document.getElementById('answer').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        submitAnswer();
+      }
+    });
+    document.getElementById('restartQuiz').addEventListener('click', restartQuiz);
+  </script>
+</body>
+</html>
